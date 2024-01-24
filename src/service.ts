@@ -21,8 +21,14 @@ export const get = async <T>(path: string): Promise<T> => {
   return result;
 };
 
-export const post = async <T>(path: string, body: string): Promise<T> => {
-  console.log(body);
+export const post = async <T>(
+  path: string,
+  body: string,
+  contentType?: string,
+): Promise<T> => {
+  if (contentType) {
+    headers["Content-Type"] = contentType;
+  }
   const requestUri = config.TeamCityUrl.concat(path);
   const result: T = await axios
     .post(requestUri, body, {
@@ -32,7 +38,32 @@ export const post = async <T>(path: string, body: string): Promise<T> => {
       return r.data;
     })
     .catch((err) => {
-      console.log(`An error occured: ${err.message} - ${err.data}`);
+      console.log("");
+      console.log(err.response.data);
+    });
+
+  return result;
+};
+export const put = async <T>(
+  path: string,
+  body: string,
+  contentType?: string,
+): Promise<T> => {
+  if (contentType) {
+    headers["Content-Type"] = contentType;
+    headers.Accept = contentType;
+  }
+  const requestUri = config.TeamCityUrl.concat(path);
+  const result: T = await axios
+    .put(requestUri, body, {
+      headers: headers,
+    })
+    .then((r) => {
+      return r.data;
+    })
+    .catch((err) => {
+      console.log("");
+      console.log(err.response.data);
     });
 
   return result;

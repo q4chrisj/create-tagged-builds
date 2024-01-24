@@ -21,7 +21,19 @@ export type NewProject = {
   parentProject: {
     locator: string;
   };
+  sourceProject: {
+    locator: string;
+  };
   name: string;
   id: string;
-  copyAllAssociatedSettings: boolean;
+  copyAllAssociatedSettings: string;
+};
+
+export type Parameter = {
+  name: string;
+  value: string;
+};
+
+export type UpdateParameters = {
+  parameters: Parameter[];
 };
