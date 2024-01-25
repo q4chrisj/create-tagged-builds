@@ -17,9 +17,6 @@ export const run = async (): Promise<void> => {
     `Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`,
   );
 
-  // console.log(mostRecentProject?.projects);
-  // console.log(project?.buildTypes);
-
   const createResult: Project | undefined = await createNewProject(
     newProjectName,
     newProjectParentProjectId,
