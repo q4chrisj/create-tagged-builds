@@ -23,6 +23,9 @@ export type Project = {
 export type BuildType = {
   id: string;
   name: string;
+  settings: {
+    property: Parameter[];
+  };
 };
 
 export type TriggerBuild = {

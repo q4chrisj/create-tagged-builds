@@ -55,6 +55,7 @@ export const run = async (): Promise<void> => {
   await updateProjectParameters(createResult.id, paramUpdates);
   //
   // here we can loop through the new projects builds and trigger them
+  // if we decide to go this route we can also reset the build counter for each project
   console.log(`\nTriggering builds for new project ${createResult.name}\n`);
 
   const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI"];

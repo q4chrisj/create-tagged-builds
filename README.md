@@ -1,5 +1,17 @@
 # Create Tagged Builds - POC
 
+## How to run this
+
+1. Create a .env file in the root of the project and set the following:
+
+- TC_URL: Path to the team city rest api
+- TC_TOKEN: A token generated from your profile page in TeamCity
+
+2. Run `npx ts-node src/index.ts`
+
+- This will create a new build under Q4Web with the name v5.120.0. Since this
+  is a POC all values are hard coded.
+
 ## Scope of this POC:
 
 1. Will not address tagging the repository.
