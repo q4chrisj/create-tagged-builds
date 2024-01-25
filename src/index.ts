@@ -1,20 +1,24 @@
 import {
   createNewProject,
   getMostRecentProject,
+  getProject,
+  triggerBuild,
   updateProjectParameters,
 } from "./index.helpers";
 import { Project, UpdateParameters } from "./model";
 
 export const run = async (): Promise<void> => {
-  // newProjectName and newProjectParentProjectId should be passed in
-  const newProjectName: string = "v5.120.0";
-  const newProjectParentProjectId: string = "Q4Web";
+  const newProjectName: string = "v5.120.0"; // this would be based off the tag from github
+  const newProjectParentProjectId: string = "Q4Web"; // this would have to be dynamic in some way
   const latestFoundationTag: string = "v2.115.0"; // this would normally come from a github api call
   const latestGoServicetag: string = "v2.67.0"; // this would normally come from a github api call
   const mostRecentProject = await getMostRecentProject("Q4Web");
   console.log(
     `Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`,
   );
+
+  // console.log(mostRecentProject?.projects);
+  // console.log(project?.buildTypes);
 
   const createResult: Project | undefined = await createNewProject(
     newProjectName,
@@ -52,6 +56,20 @@ export const run = async (): Promise<void> => {
   };
 
   await updateProjectParameters(createResult.id, paramUpdates);
+  //
+  // here we can loop through the new projects builds and trigger them
+  console.log(`\nTriggering builds for new project ${createResult.name}\n`);
+
+  const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI"];
+  // const projectId = "Q4Web_Develop";
+  const projectId = createResult.id;
+  const newProject: Project | undefined = await getProject(projectId);
+  for (const buildType of newProject!.buildTypes.buildType) {
+    if (validBuildTypeNames.includes(buildType.name)) {
+      console.log(`Triggering build for ${buildType.name}`);
+      triggerBuild(buildType.id);
+    }
+  }
 
   return;
 };

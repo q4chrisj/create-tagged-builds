@@ -1,17 +1,23 @@
-import { NewProject, Project, UpdateParameters } from "./model";
+import { NewProject, Project, TriggerBuild, UpdateParameters } from "./model";
 import { get, post, put } from "./service";
 
 export const getMostRecentProject = async (
   projectId: string,
 ): Promise<Project | undefined> => {
-  const result: Project = await get<Project>(`/projects/id:${projectId}`);
-  const mostRecentProject: Project | undefined = result.projects.project
+  const result: Project | undefined = await getProject(projectId);
+  const mostRecentProject: Project | undefined = result!.projects.project
     .filter((p) => {
       return p.name.startsWith("v") && !p.name.includes("-");
     })
     .pop(); // the last item in this array is _usually_ the most recent one.
 
   return mostRecentProject;
+};
+
+export const getProject = async (
+  projectId: string,
+): Promise<Project | undefined> => {
+  return await get<Project>(`/projects/id:${projectId}`);
 };
 
 export const createNewProject = async (
@@ -58,4 +64,13 @@ export const updateProjectParameters = async (
 
     await put(updatePath, `${param.value}`, "text/plain");
   }
+};
+
+export const triggerBuild = async (buildTypeId: string) => {
+  const data: TriggerBuild = {
+    buildType: {
+      id: buildTypeId,
+    },
+  };
+  await post("/buildQueue", JSON.stringify(data));
 };

@@ -49,14 +49,18 @@ export const put = async <T>(
   body: string,
   contentType?: string,
 ): Promise<T> => {
+  let specialHeaders;
   if (contentType) {
-    headers["Content-Type"] = contentType;
-    headers.Accept = contentType;
+    specialHeaders = {
+      ...headers,
+      "Content-Type": contentType,
+      Accept: contentType,
+    };
   }
   const requestUri = config.TeamCityUrl.concat(path);
   const result: T = await axios
     .put(requestUri, body, {
-      headers: headers,
+      headers: specialHeaders || headers,
     })
     .then((r) => {
       return r.data;

@@ -15,6 +15,20 @@ export type Project = {
   projects: {
     project: Project[];
   };
+  buildTypes: {
+    buildType: BuildType[];
+  };
+};
+
+export type BuildType = {
+  id: string;
+  name: string;
+};
+
+export type TriggerBuild = {
+  buildType: {
+    id: string;
+  };
 };
 
 export type NewProject = {
