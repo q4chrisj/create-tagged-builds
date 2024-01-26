@@ -12,6 +12,7 @@ export const run = async (): Promise<void> => {
   const newProjectParentProjectId: string = "Q4Web"; // this would have to be dynamic in some way
   const latestFoundationTag: string = "v2.115.0"; // this would normally come from a github api call
   const latestGoServicetag: string = "v2.67.0"; // this would normally come from a github api call
+
   const mostRecentProject = await getMostRecentProject("Q4Web");
   console.log(
     `Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`,
@@ -65,7 +66,7 @@ export const run = async (): Promise<void> => {
   for (const buildType of newProject!.buildTypes.buildType) {
     if (validBuildTypeNames.includes(buildType.name)) {
       console.log(`Triggering build for ${buildType.name}`);
-      triggerBuild(buildType.id);
+      await triggerBuild(buildType.id);
     }
   }
 
