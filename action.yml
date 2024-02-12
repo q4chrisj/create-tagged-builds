@@ -1,0 +1,11 @@
+name: "Create Tagged Builds"
+description: |
+  'Creates tagged builds in TeamCity for Q4 Studio'
+inputs:
+  token:
+    description: "GitHub token"
+    required: true
+    default: ${{ github.token }}
+runs:
+  using: "node18"
+  main: "dist/index.js"
