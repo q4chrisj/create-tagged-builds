@@ -6,6 +6,12 @@ inputs:
     description: "GitHub token"
     required: true
     default: ${{ github.token }}
+  team_city_uri:
+    description: "URI to the team city api (https://<team_city_url>/app/rest)"
+    required: true
+  team_city_token:
+    description: "Token to authorize api requests to TeamCity"
+    required: true
 runs:
   using: "node18"
   main: "dist/index.js"
