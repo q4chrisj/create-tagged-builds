@@ -1,3 +1,5 @@
+import fs from "fs";
+import * as core from "@actions/core";
 import {
   createNewProject,
   getMostRecentProject,
@@ -6,17 +8,46 @@ import {
   updateProjectParameters,
 } from "./index.helpers";
 import { Project, UpdateParameters } from "./model";
+import { Config, getConfig } from "./config";
 
 export const run = async (): Promise<void> => {
-  const newProjectName: string = "v5.120.0"; // this would be based off the tag from github
-  const newProjectParentProjectId: string = "Q4Web"; // this would have to be dynamic in some way
-  const latestFoundationTag: string = "v2.115.0"; // this would normally come from a github api call
-  const latestGoServicetag: string = "v2.67.0"; // this would normally come from a github api call
+  const newTag = process.env.GITHUB_REF_NAME;
 
-  const mostRecentProject = await getMostRecentProject("Q4Web");
+  const TEAM_CITY_URI = core.getInput("team_city_uri");
+  if (TEAM_CITY_URI === "") {
+    console.error("The team_city_uri must be passed into the action.");
+    return;
+  }
+  const TEAM_CITY_TOKEN = core.getInput("team_city_token");
+  if (TEAM_CITY_TOKEN === "") {
+    console.error("The TEAM_CITY_TOKEN must be passed into the action.");
+    return;
+  }
+
+  const TEAM_CITY_PROJECT = core.getInput("team_city_project");
+  if (TEAM_CITY_PROJECT === "") {
+    console.error("The TEAM_CITY_PROJECT must be passed into the action.");
+    return;
+  }
+
+  const config: Config = getConfig(
+    TEAM_CITY_URI,
+    TEAM_CITY_TOKEN,
+    TEAM_CITY_PROJECT,
+  );
+
+  const newProjectName: string | undefined = newTag; // this would be based off the tag from github
+  const newProjectParentProjectId: string = config.TeamCityProject; // this would have to be dynamic in some way
+  const mostRecentProject = await getMostRecentProject(
+    newProjectParentProjectId,
+  );
   console.log(
     `Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`,
   );
+
+  /*
+  const latestFoundationTag: string = "v2.115.0"; // this would normally come from a github api call
+  const latestGoServicetag: string = "v2.67.0"; // this would normally come from a github api call
 
   const createResult: Project | undefined = await createNewProject(
     newProjectName,
@@ -71,6 +102,7 @@ export const run = async (): Promise<void> => {
   }
 
   return;
+  */
 };
 
 run();

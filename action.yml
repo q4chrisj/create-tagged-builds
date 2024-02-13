@@ -12,6 +12,9 @@ inputs:
   team_city_token:
     description: "Token to authorize api requests to TeamCity"
     required: true
+  team_city_project:
+    description: "The root project in TeamCity for this repository"
+    required: true
 runs:
   using: "node18"
   main: "dist/index.js"
