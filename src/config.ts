@@ -1,17 +1,9 @@
 import * as core from "@actions/core";
-import * as dotenv from "dotenv";
-dotenv.config();
 
 export type Config = {
   TeamCityToken: string;
   TeamCityUri: string;
   TeamCityProject: string;
-};
-
-export const config: Config = {
-  TeamCityToken: process.env.TC_TOKEN || "",
-  TeamCityUri: process.env.TC_URL || "",
-  TeamCityProject: "",
 };
 
 export const getConfig = (): Config => {
