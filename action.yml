@@ -16,5 +16,5 @@ inputs:
     description: "The root project in TeamCity for this repository"
     required: true
 runs:
-  using: "node18"
+  using: "node20"
   main: "dist/index.js"
