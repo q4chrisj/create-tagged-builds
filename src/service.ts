@@ -9,7 +9,7 @@ const headers = {
 };
 
 export const get = async <T>(path: string): Promise<T> => {
-  const requestUri = config.TeamCityUrl.concat(path);
+  const requestUri = config.TeamCityUri.concat(path);
   const result: T = await axios
     .get(requestUri, {
       headers: headers,
@@ -29,7 +29,7 @@ export const post = async <T>(
   if (contentType) {
     headers["Content-Type"] = contentType;
   }
-  const requestUri = config.TeamCityUrl.concat(path);
+  const requestUri = config.TeamCityUri.concat(path);
   const result: T = await axios
     .post(requestUri, body, {
       headers: headers,
@@ -57,7 +57,7 @@ export const put = async <T>(
       Accept: contentType,
     };
   }
-  const requestUri = config.TeamCityUrl.concat(path);
+  const requestUri = config.TeamCityUri.concat(path);
   const result: T = await axios
     .put(requestUri, body, {
       headers: specialHeaders || headers,
