@@ -30,29 +30,38 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getConfig = void 0;
+exports.config = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const getConfig = () => {
-    const TEAM_CITY_URI = core.getInput("team_city_uri");
-    if (TEAM_CITY_URI === "") {
-        console.error("The team_city_uri must be passed into the action.");
-    }
-    const TEAM_CITY_TOKEN = core.getInput("team_city_token");
-    if (TEAM_CITY_TOKEN === "") {
-        console.error("The TEAM_CITY_TOKEN must be passed into the action.");
-    }
-    const TEAM_CITY_PROJECT = core.getInput("team_city_project");
-    if (TEAM_CITY_PROJECT === "") {
-        console.error("The TEAM_CITY_PROJECT must be passed into the action.");
-    }
-    const config = {
-        TeamCityUri: TEAM_CITY_URI,
-        TeamCityToken: TEAM_CITY_TOKEN,
-        TeamCityProject: TEAM_CITY_PROJECT,
-    };
-    return config;
+exports.config = {
+    TeamCityUri: core.getInput("team_city_uri") ||
+        "The TEAM_CITY_URI must be passed into the action",
+    TeamCityToken: core.getInput("team_city_token") ||
+        "The TEAM_CITY_TOKEN must be passed into the action",
+    TeamCityProject: core.getInput("team_city_project") ||
+        "The TEAM_CITY_PROJECT must be passed into the action",
 };
-exports.getConfig = getConfig;
+// export const getConfig = (): Config => {
+//   const TEAM_CITY_URI = core.getInput("team_city_uri");
+//   if (TEAM_CITY_URI === "") {
+//     console.error("The team_city_uri must be passed into the action.");
+//   }
+//   const TEAM_CITY_TOKEN = core.getInput("team_city_token");
+//   if (TEAM_CITY_TOKEN === "") {
+//     console.error("The TEAM_CITY_TOKEN must be passed into the action.");
+//   }
+//
+//   const TEAM_CITY_PROJECT = core.getInput("team_city_project");
+//   if (TEAM_CITY_PROJECT === "") {
+//     console.error("The TEAM_CITY_PROJECT must be passed into the action.");
+//   }
+//
+//   const config: Config = {
+//     TeamCityUri: TEAM_CITY_URI,
+//     TeamCityToken: TEAM_CITY_TOKEN,
+//     TeamCityProject: TEAM_CITY_PROJECT,
+//   };
+//   return config;
+// };
 
 
 /***/ }),
@@ -130,19 +139,18 @@ exports.triggerBuild = triggerBuild;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = exports.config = void 0;
+exports.run = void 0;
 const index_helpers_1 = __nccwpck_require__(1812);
 const config_1 = __nccwpck_require__(1677);
-exports.config = (0, config_1.getConfig)();
 const run = async () => {
     const newTag = process.env.GITHUB_REF_NAME;
     if (newTag === undefined) {
         console.error("Couldn't determine what the new tag is");
         return;
     }
-    console.log(`\nCreating tagged build for ${exports.config.TeamCityProject} using tag ${newTag}`);
+    console.log(`\nCreating tagged build for ${config_1.config.TeamCityProject} using tag ${newTag}`);
     const newProjectName = newTag;
-    const newProjectParentProjectId = exports.config.TeamCityProject;
+    const newProjectParentProjectId = config_1.config.TeamCityProject;
     const mostRecentProject = await (0, index_helpers_1.getMostRecentProject)(newProjectParentProjectId);
     console.log(`Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`);
     const createResult = await (0, index_helpers_1.createNewProject)(newProjectName, newProjectParentProjectId, mostRecentProject.id);
@@ -195,16 +203,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.put = exports.post = exports.get = void 0;
 const axios_1 = __importDefault(__nccwpck_require__(8757));
 const config_1 = __nccwpck_require__(1677);
-const config = (0, config_1.getConfig)();
-console.log(config);
-const teamCityToken = config.TeamCityToken;
+const teamCityToken = config_1.config.TeamCityToken;
 const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
     Authorization: `Bearer ${teamCityToken}`,
 };
 const get = async (path) => {
-    const requestUri = config.TeamCityUri.concat(path);
+    const requestUri = config_1.config.TeamCityUri.concat(path);
     const result = await axios_1.default
         .get(requestUri, {
         headers: headers,
@@ -219,7 +225,7 @@ const post = async (path, body, contentType) => {
     if (contentType) {
         headers["Content-Type"] = contentType;
     }
-    const requestUri = config.TeamCityUri.concat(path);
+    const requestUri = config_1.config.TeamCityUri.concat(path);
     const result = await axios_1.default
         .post(requestUri, body, {
         headers: headers,
@@ -243,7 +249,7 @@ const put = async (path, body, contentType) => {
             Accept: contentType,
         };
     }
-    const requestUri = config.TeamCityUri.concat(path);
+    const requestUri = config_1.config.TeamCityUri.concat(path);
     const result = await axios_1.default
         .put(requestUri, body, {
         headers: specialHeaders || headers,

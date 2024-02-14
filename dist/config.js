@@ -23,26 +23,35 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getConfig = void 0;
+exports.config = void 0;
 const core = __importStar(require("@actions/core"));
-const getConfig = () => {
-    const TEAM_CITY_URI = core.getInput("team_city_uri");
-    if (TEAM_CITY_URI === "") {
-        console.error("The team_city_uri must be passed into the action.");
-    }
-    const TEAM_CITY_TOKEN = core.getInput("team_city_token");
-    if (TEAM_CITY_TOKEN === "") {
-        console.error("The TEAM_CITY_TOKEN must be passed into the action.");
-    }
-    const TEAM_CITY_PROJECT = core.getInput("team_city_project");
-    if (TEAM_CITY_PROJECT === "") {
-        console.error("The TEAM_CITY_PROJECT must be passed into the action.");
-    }
-    const config = {
-        TeamCityUri: TEAM_CITY_URI,
-        TeamCityToken: TEAM_CITY_TOKEN,
-        TeamCityProject: TEAM_CITY_PROJECT,
-    };
-    return config;
+exports.config = {
+    TeamCityUri: core.getInput("team_city_uri") ||
+        "The TEAM_CITY_URI must be passed into the action",
+    TeamCityToken: core.getInput("team_city_token") ||
+        "The TEAM_CITY_TOKEN must be passed into the action",
+    TeamCityProject: core.getInput("team_city_project") ||
+        "The TEAM_CITY_PROJECT must be passed into the action",
 };
-exports.getConfig = getConfig;
+// export const getConfig = (): Config => {
+//   const TEAM_CITY_URI = core.getInput("team_city_uri");
+//   if (TEAM_CITY_URI === "") {
+//     console.error("The team_city_uri must be passed into the action.");
+//   }
+//   const TEAM_CITY_TOKEN = core.getInput("team_city_token");
+//   if (TEAM_CITY_TOKEN === "") {
+//     console.error("The TEAM_CITY_TOKEN must be passed into the action.");
+//   }
+//
+//   const TEAM_CITY_PROJECT = core.getInput("team_city_project");
+//   if (TEAM_CITY_PROJECT === "") {
+//     console.error("The TEAM_CITY_PROJECT must be passed into the action.");
+//   }
+//
+//   const config: Config = {
+//     TeamCityUri: TEAM_CITY_URI,
+//     TeamCityToken: TEAM_CITY_TOKEN,
+//     TeamCityProject: TEAM_CITY_PROJECT,
+//   };
+//   return config;
+// };

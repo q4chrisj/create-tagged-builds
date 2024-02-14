@@ -6,16 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.put = exports.post = exports.get = void 0;
 const axios_1 = __importDefault(require("axios"));
 const config_1 = require("./config");
-const config = (0, config_1.getConfig)();
-console.log(config);
-const teamCityToken = config.TeamCityToken;
+const teamCityToken = config_1.config.TeamCityToken;
 const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
     Authorization: `Bearer ${teamCityToken}`,
 };
 const get = async (path) => {
-    const requestUri = config.TeamCityUri.concat(path);
+    const requestUri = config_1.config.TeamCityUri.concat(path);
     const result = await axios_1.default
         .get(requestUri, {
         headers: headers,
@@ -30,7 +28,7 @@ const post = async (path, body, contentType) => {
     if (contentType) {
         headers["Content-Type"] = contentType;
     }
-    const requestUri = config.TeamCityUri.concat(path);
+    const requestUri = config_1.config.TeamCityUri.concat(path);
     const result = await axios_1.default
         .post(requestUri, body, {
         headers: headers,
@@ -54,7 +52,7 @@ const put = async (path, body, contentType) => {
             Accept: contentType,
         };
     }
-    const requestUri = config.TeamCityUri.concat(path);
+    const requestUri = config_1.config.TeamCityUri.concat(path);
     const result = await axios_1.default
         .put(requestUri, body, {
         headers: specialHeaders || headers,

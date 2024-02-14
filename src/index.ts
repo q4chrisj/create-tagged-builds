@@ -5,9 +5,8 @@ import {
   updateProjectParameters,
 } from "./index.helpers";
 import { Parameter, Project, UpdateParameters } from "./model";
-import { Config, getConfig } from "./config";
+import { config } from "./config";
 
-export const config: Config = getConfig();
 export const run = async (): Promise<void> => {
   const newTag = process.env.GITHUB_REF_NAME;
   if (newTag === undefined) {
