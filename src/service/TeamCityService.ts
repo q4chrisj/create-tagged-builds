@@ -1,5 +1,5 @@
-import { NewProject, Project, TriggerBuild, UpdateParameters } from "./model";
-import { get, post, put } from "./service";
+import { NewProject, Project, TriggerBuild, UpdateParameters } from "../model";
+import { get, post, put } from "./HttpService";
 
 export const getMostRecentProject = async (
   projectId: string,

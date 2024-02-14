@@ -66,73 +66,6 @@ exports.config = {
 
 /***/ }),
 
-/***/ 1812:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.triggerBuild = exports.updateProjectParameters = exports.createNewProject = exports.getProject = exports.getMostRecentProject = void 0;
-const service_1 = __nccwpck_require__(1349);
-const getMostRecentProject = async (projectId) => {
-    const result = await (0, exports.getProject)(projectId);
-    const mostRecentProject = result.projects.project
-        .filter((p) => {
-        return p.name.startsWith("v") && !p.name.includes("-");
-    })
-        .pop(); // the last item in this array is _usually_ the most recent one.
-    return mostRecentProject;
-};
-exports.getMostRecentProject = getMostRecentProject;
-const getProject = async (projectId) => {
-    return await (0, service_1.get)(`/projects/id:${projectId}`);
-};
-exports.getProject = getProject;
-const createNewProject = async (projectName, projectParentId, projectSourceId) => {
-    const newProjectId = projectParentId
-        .concat("_")
-        .concat(projectName.split(".").join(""));
-    const newProject = {
-        id: newProjectId,
-        parentProject: {
-            locator: projectParentId,
-        },
-        sourceProject: {
-            locator: projectSourceId,
-        },
-        name: projectName,
-        copyAllAssociatedSettings: "true",
-    };
-    const createResult = await (0, service_1.post)("/projects", JSON.stringify(newProject)).then((result) => {
-        if (result) {
-            return result;
-        }
-        return undefined;
-    });
-    return createResult;
-};
-exports.createNewProject = createNewProject;
-const updateProjectParameters = async (projectId, paramsToUpdate) => {
-    for (const param of paramsToUpdate.parameters) {
-        const updatePath = `/projects/id:${projectId}/parameters/${param.name}`;
-        console.log(` - Updating ${param.name} to ${param.value}`);
-        await (0, service_1.put)(updatePath, `${param.value}`, "text/plain");
-    }
-};
-exports.updateProjectParameters = updateProjectParameters;
-const triggerBuild = async (buildTypeId) => {
-    const data = {
-        buildType: {
-            id: buildTypeId,
-        },
-    };
-    await (0, service_1.post)("/buildQueue", JSON.stringify(data));
-};
-exports.triggerBuild = triggerBuild;
-
-
-/***/ }),
-
 /***/ 9283:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -140,7 +73,7 @@ exports.triggerBuild = triggerBuild;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
-const index_helpers_1 = __nccwpck_require__(1812);
+const TeamCityService_1 = __nccwpck_require__(5217);
 const config_1 = __nccwpck_require__(1677);
 const run = async () => {
     const newTag = process.env.GITHUB_REF_NAME;
@@ -151,9 +84,9 @@ const run = async () => {
     console.log(`\nCreating tagged build for ${config_1.config.TeamCityProject} using tag ${newTag}\n`);
     const newProjectName = newTag;
     const newProjectParentProjectId = config_1.config.TeamCityProject;
-    const mostRecentProject = await (0, index_helpers_1.getMostRecentProject)(newProjectParentProjectId);
+    const mostRecentProject = await (0, TeamCityService_1.getMostRecentProject)(newProjectParentProjectId);
     console.log(`Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`);
-    const createResult = await (0, index_helpers_1.createNewProject)(newProjectName, newProjectParentProjectId, mostRecentProject.id);
+    const createResult = await (0, TeamCityService_1.createNewProject)(newProjectName, newProjectParentProjectId, mostRecentProject.id);
     if (!createResult) {
         console.error(` - Project ${newProjectName} was NOT created`);
         return;
@@ -173,14 +106,14 @@ const run = async () => {
         paramUpdates.parameters.push(param);
     }
     console.log("Updating new projects parameters.");
-    await (0, index_helpers_1.updateProjectParameters)(createResult.id, paramUpdates);
+    await (0, TeamCityService_1.updateProjectParameters)(createResult.id, paramUpdates);
     // trigger the builds
     console.log(`\nTriggering builds for new project ${createResult.name}`);
     const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI", "CI"];
     for (const buildType of createResult.buildTypes.buildType) {
         if (validBuildTypeNames.includes(buildType.name)) {
             console.log(` - Triggering build for ${buildType.name}`);
-            await (0, index_helpers_1.triggerBuild)(buildType.id);
+            await (0, TeamCityService_1.triggerBuild)(buildType.id);
         }
     }
     return;
@@ -191,7 +124,7 @@ exports.run = run;
 
 /***/ }),
 
-/***/ 1349:
+/***/ 5468:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -264,6 +197,73 @@ const put = async (path, body, contentType) => {
     return result;
 };
 exports.put = put;
+
+
+/***/ }),
+
+/***/ 5217:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.triggerBuild = exports.updateProjectParameters = exports.createNewProject = exports.getProject = exports.getMostRecentProject = void 0;
+const HttpService_1 = __nccwpck_require__(5468);
+const getMostRecentProject = async (projectId) => {
+    const result = await (0, exports.getProject)(projectId);
+    const mostRecentProject = result.projects.project
+        .filter((p) => {
+        return p.name.startsWith("v") && !p.name.includes("-");
+    })
+        .pop(); // the last item in this array is _usually_ the most recent one.
+    return mostRecentProject;
+};
+exports.getMostRecentProject = getMostRecentProject;
+const getProject = async (projectId) => {
+    return await (0, HttpService_1.get)(`/projects/id:${projectId}`);
+};
+exports.getProject = getProject;
+const createNewProject = async (projectName, projectParentId, projectSourceId) => {
+    const newProjectId = projectParentId
+        .concat("_")
+        .concat(projectName.split(".").join(""));
+    const newProject = {
+        id: newProjectId,
+        parentProject: {
+            locator: projectParentId,
+        },
+        sourceProject: {
+            locator: projectSourceId,
+        },
+        name: projectName,
+        copyAllAssociatedSettings: "true",
+    };
+    const createResult = await (0, HttpService_1.post)("/projects", JSON.stringify(newProject)).then((result) => {
+        if (result) {
+            return result;
+        }
+        return undefined;
+    });
+    return createResult;
+};
+exports.createNewProject = createNewProject;
+const updateProjectParameters = async (projectId, paramsToUpdate) => {
+    for (const param of paramsToUpdate.parameters) {
+        const updatePath = `/projects/id:${projectId}/parameters/${param.name}`;
+        console.log(` - Updating ${param.name} to ${param.value}`);
+        await (0, HttpService_1.put)(updatePath, `${param.value}`, "text/plain");
+    }
+};
+exports.updateProjectParameters = updateProjectParameters;
+const triggerBuild = async (buildTypeId) => {
+    const data = {
+        buildType: {
+            id: buildTypeId,
+        },
+    };
+    await (0, HttpService_1.post)("/buildQueue", JSON.stringify(data));
+};
+exports.triggerBuild = triggerBuild;
 
 
 /***/ }),
