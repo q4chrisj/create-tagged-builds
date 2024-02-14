@@ -1,9 +1,9 @@
-// import {
-//   createNewProject,
-//   getMostRecentProject,
-//   triggerBuild,
-//   updateProjectParameters,
-// } from "./index.helpers";
+import {
+  createNewProject,
+  getMostRecentProject,
+  triggerBuild,
+  updateProjectParameters,
+} from "./index.helpers";
 // import { Parameter, Project, UpdateParameters } from "./model";
 import { Config, getConfig } from "./config";
 
@@ -16,16 +16,16 @@ export const run = async (): Promise<void> => {
   }
 
   console.log(
-    `Creating tagged build for ${config.TeamCityProject} using tag ${newTag}`,
+    `\nCreating tagged build for ${config.TeamCityProject} using tag ${newTag}`,
   );
-  // const newProjectName: string = newTag;
-  // const newProjectParentProjectId: string = config.TeamCityProject;
-  // const mostRecentProject = await getMostRecentProject(
-  //   newProjectParentProjectId,
-  // );
-  // console.log(
-  //   `Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`,
-  // );
+  const newProjectName: string = newTag;
+  const newProjectParentProjectId: string = config.TeamCityProject;
+  const mostRecentProject = await getMostRecentProject(
+    newProjectParentProjectId,
+  );
+  console.log(
+    `Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`,
+  );
   //
   // const createResult: Project | undefined = await createNewProject(
   //   newProjectName,
