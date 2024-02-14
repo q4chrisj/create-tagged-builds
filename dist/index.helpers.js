@@ -43,7 +43,7 @@ exports.createNewProject = createNewProject;
 const updateProjectParameters = async (projectId, paramsToUpdate) => {
     for (const param of paramsToUpdate.parameters) {
         const updatePath = `/projects/id:${projectId}/parameters/${param.name}`;
-        console.log(`Updating ${param.name} to ${param.value}`);
+        console.log(` - Updating ${param.name} to ${param.value}`);
         await (0, service_1.put)(updatePath, `${param.value}`, "text/plain");
     }
 };

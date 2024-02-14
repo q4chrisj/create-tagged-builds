@@ -115,7 +115,7 @@ exports.createNewProject = createNewProject;
 const updateProjectParameters = async (projectId, paramsToUpdate) => {
     for (const param of paramsToUpdate.parameters) {
         const updatePath = `/projects/id:${projectId}/parameters/${param.name}`;
-        console.log(`Updating ${param.name} to ${param.value}`);
+        console.log(` - Updating ${param.name} to ${param.value}`);
         await (0, service_1.put)(updatePath, `${param.value}`, "text/plain");
     }
 };
@@ -148,7 +148,7 @@ const run = async () => {
         console.error("Couldn't determine what the new tag is");
         return;
     }
-    console.log(`\nCreating tagged build for ${config_1.config.TeamCityProject} using tag ${newTag}`);
+    console.log(`\nCreating tagged build for ${config_1.config.TeamCityProject} using tag ${newTag}\n`);
     const newProjectName = newTag;
     const newProjectParentProjectId = config_1.config.TeamCityProject;
     const mostRecentProject = await (0, index_helpers_1.getMostRecentProject)(newProjectParentProjectId);

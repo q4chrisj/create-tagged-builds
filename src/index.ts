@@ -15,7 +15,7 @@ export const run = async (): Promise<void> => {
   }
 
   console.log(
-    `\nCreating tagged build for ${config.TeamCityProject} using tag ${newTag}`,
+    `\nCreating tagged build for ${config.TeamCityProject} using tag ${newTag}\n`,
   );
   const newProjectName: string = newTag;
   const newProjectParentProjectId: string = config.TeamCityProject;
