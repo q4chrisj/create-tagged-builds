@@ -8,26 +8,7 @@ import {
 import { Parameter, Project, UpdateParameters } from "./model";
 import { Config, getConfig } from "./config";
 
-const TEAM_CITY_URI = core.getInput("team_city_uri");
-if (TEAM_CITY_URI === "") {
-  console.error("The team_city_uri must be passed into the action.");
-}
-const TEAM_CITY_TOKEN = core.getInput("team_city_token");
-if (TEAM_CITY_TOKEN === "") {
-  console.error("The TEAM_CITY_TOKEN must be passed into the action.");
-}
-
-const TEAM_CITY_PROJECT = core.getInput("team_city_project");
-if (TEAM_CITY_PROJECT === "") {
-  console.error("The TEAM_CITY_PROJECT must be passed into the action.");
-}
-
-export const config: Config = getConfig(
-  TEAM_CITY_URI,
-  TEAM_CITY_TOKEN,
-  TEAM_CITY_PROJECT,
-);
-
+export const config: Config = getConfig();
 export const run = async (): Promise<void> => {
   const newTag = process.env.GITHUB_REF_NAME;
   if (newTag === undefined) {
@@ -51,11 +32,11 @@ export const run = async (): Promise<void> => {
   );
 
   if (!createResult) {
-    console.log(`Project ${newProjectName} was NOT created`);
+    console.error(` - Project ${newProjectName} was NOT created`);
     return;
   }
 
-  console.log(`New Project ${createResult.name} created.\n`);
+  console.log(` - New Project ${createResult.name} created.\n`);
 
   // figure out which parameters for the new project need to be updated.
   const paramsToUpdate: Array<Parameter> = [];

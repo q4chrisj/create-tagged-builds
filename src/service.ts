@@ -1,5 +1,9 @@
 import axios from "axios";
-import { config } from ".";
+import { Config, getConfig } from "./config";
+
+const config: Config = getConfig();
+
+console.log(config);
 
 const teamCityToken: string = config.TeamCityToken;
 const headers = {
