@@ -1,4 +1,3 @@
-import fs from "fs";
 import * as core from "@actions/core";
 import {
   createNewProject,
@@ -7,11 +6,15 @@ import {
   triggerBuild,
   updateProjectParameters,
 } from "./index.helpers";
-import { Project, UpdateParameters } from "./model";
+import { Parameter, Project, UpdateParameters } from "./model";
 import { Config, getConfig } from "./config";
 
 export const run = async (): Promise<void> => {
   const newTag = process.env.GITHUB_REF_NAME;
+  if (newTag === undefined) {
+    console.error("Couldn't determine what the new tag is");
+    return;
+  }
 
   const TEAM_CITY_URI = core.getInput("team_city_uri");
   if (TEAM_CITY_URI === "") {
@@ -36,18 +39,14 @@ export const run = async (): Promise<void> => {
     TEAM_CITY_PROJECT,
   );
 
-  const newProjectName: string | undefined = newTag; // this would be based off the tag from github
-  const newProjectParentProjectId: string = config.TeamCityProject; // this would have to be dynamic in some way
+  const newProjectName: string = newTag;
+  const newProjectParentProjectId: string = config.TeamCityProject;
   const mostRecentProject = await getMostRecentProject(
     newProjectParentProjectId,
   );
   console.log(
     `Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`,
   );
-
-  /*
-  const latestFoundationTag: string = "v2.115.0"; // this would normally come from a github api call
-  const latestGoServicetag: string = "v2.67.0"; // this would normally come from a github api call
 
   const createResult: Project | undefined = await createNewProject(
     newProjectName,
@@ -61,6 +60,43 @@ export const run = async (): Promise<void> => {
   }
 
   console.log(`New Project ${createResult.name} created.\n`);
+
+  // figure out which parameters for the new project need to be updated.
+  const paramsToUpdate: Array<Parameter> = [];
+  paramsToUpdate.push({ name: "env.version", value: newTag });
+
+  createResult.parameters.property.forEach((p) => {
+    if (p.name.includes("system.GitDefaultBranch-"))
+      paramsToUpdate.push({ name: p.name, value: `tags/${newTag}` });
+  });
+
+  const paramUpdates: UpdateParameters = {
+    parameters: [],
+  };
+
+  for (const param of paramsToUpdate) {
+    paramUpdates.parameters.push(param);
+  }
+
+  console.log("Updating new projects parameters.");
+  await updateProjectParameters(createResult.id, paramUpdates);
+
+  // trigger the builds
+  console.log(`\nTriggering builds for new project ${createResult.name}\n`);
+  const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI", "CI"];
+  // const newProject: Project | undefined = await getProject(createResult.id);
+  for (const buildType of createResult.buildTypes.buildType) {
+    if (validBuildTypeNames.includes(buildType.name)) {
+      console.log(`Triggering build for ${buildType.name}`);
+      await triggerBuild(buildType.id);
+    }
+  }
+
+  return;
+  /*
+  const latestFoundationTag: string = "v2.115.0"; // this would normally come from a github api call
+  const latestGoServicetag: string = "v2.67.0"; // this would normally come from a github api call
+
 
   // update new project dependency parameters
   const paramUpdates: UpdateParameters = {
