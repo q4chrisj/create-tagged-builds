@@ -132,7 +132,6 @@ exports.triggerBuild = triggerBuild;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = exports.config = void 0;
 const index_helpers_1 = __nccwpck_require__(1812);
-// import { Parameter, Project, UpdateParameters } from "./model";
 const config_1 = __nccwpck_require__(1677);
 exports.config = (0, config_1.getConfig)();
 const run = async () => {
@@ -146,50 +145,36 @@ const run = async () => {
     const newProjectParentProjectId = exports.config.TeamCityProject;
     const mostRecentProject = await (0, index_helpers_1.getMostRecentProject)(newProjectParentProjectId);
     console.log(`Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`);
-    //
-    // const createResult: Project | undefined = await createNewProject(
-    //   newProjectName,
-    //   newProjectParentProjectId,
-    //   mostRecentProject!.id,
-    // );
-    //
-    // if (!createResult) {
-    //   console.error(` - Project ${newProjectName} was NOT created`);
-    //   return;
-    // }
-    //
-    // console.log(` - New Project ${createResult.name} created.\n`);
-    //
-    // // figure out which parameters for the new project need to be updated.
-    // const paramsToUpdate: Array<Parameter> = [];
-    // paramsToUpdate.push({ name: "env.version", value: newTag });
-    //
-    // createResult.parameters.property.forEach((p) => {
-    //   if (p.name.includes("system.GitDefaultBranch-"))
-    //     paramsToUpdate.push({ name: p.name, value: `tags/${newTag}` });
-    // });
-    //
-    // const paramUpdates: UpdateParameters = {
-    //   parameters: [],
-    // };
-    //
-    // for (const param of paramsToUpdate) {
-    //   paramUpdates.parameters.push(param);
-    // }
-    //
-    // console.log("Updating new projects parameters.");
-    // await updateProjectParameters(createResult.id, paramUpdates);
-    //
-    // // trigger the builds
-    // console.log(`\nTriggering builds for new project ${createResult.name}`);
-    // const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI", "CI"];
-    // for (const buildType of createResult.buildTypes.buildType) {
-    //   if (validBuildTypeNames.includes(buildType.name)) {
-    //     console.log(` - Triggering build for ${buildType.name}`);
-    //     await triggerBuild(buildType.id);
-    //   }
-    // }
-    //
+    const createResult = await (0, index_helpers_1.createNewProject)(newProjectName, newProjectParentProjectId, mostRecentProject.id);
+    if (!createResult) {
+        console.error(` - Project ${newProjectName} was NOT created`);
+        return;
+    }
+    console.log(` - New Project ${createResult.name} created.\n`);
+    // figure out which parameters for the new project need to be updated.
+    const paramsToUpdate = [];
+    paramsToUpdate.push({ name: "env.version", value: newTag });
+    createResult.parameters.property.forEach((p) => {
+        if (p.name.includes("system.GitDefaultBranch-"))
+            paramsToUpdate.push({ name: p.name, value: `tags/${newTag}` });
+    });
+    const paramUpdates = {
+        parameters: [],
+    };
+    for (const param of paramsToUpdate) {
+        paramUpdates.parameters.push(param);
+    }
+    console.log("Updating new projects parameters.");
+    await (0, index_helpers_1.updateProjectParameters)(createResult.id, paramUpdates);
+    // trigger the builds
+    console.log(`\nTriggering builds for new project ${createResult.name}`);
+    const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI", "CI"];
+    for (const buildType of createResult.buildTypes.buildType) {
+        if (validBuildTypeNames.includes(buildType.name)) {
+            console.log(` - Triggering build for ${buildType.name}`);
+            await (0, index_helpers_1.triggerBuild)(buildType.id);
+        }
+    }
     return;
 };
 exports.run = run;
