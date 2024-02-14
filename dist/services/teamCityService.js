@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.triggerBuild = exports.updateProjectParameters = exports.createNewProject = exports.getProject = exports.getMostRecentProject = void 0;
-const HttpService_1 = require("./HttpService");
+const httpService_1 = require("./httpService");
 const getMostRecentProject = async (projectId) => {
     const result = await (0, exports.getProject)(projectId);
     const mostRecentProject = result.projects.project
@@ -13,7 +13,7 @@ const getMostRecentProject = async (projectId) => {
 };
 exports.getMostRecentProject = getMostRecentProject;
 const getProject = async (projectId) => {
-    return await (0, HttpService_1.get)(`/projects/id:${projectId}`);
+    return await (0, httpService_1.get)(`/projects/id:${projectId}`);
 };
 exports.getProject = getProject;
 const createNewProject = async (projectName, projectParentId, projectSourceId) => {
@@ -31,7 +31,7 @@ const createNewProject = async (projectName, projectParentId, projectSourceId) =
         name: projectName,
         copyAllAssociatedSettings: "true",
     };
-    const createResult = await (0, HttpService_1.post)("/projects", JSON.stringify(newProject)).then((result) => {
+    const createResult = await (0, httpService_1.post)("/projects", JSON.stringify(newProject)).then((result) => {
         if (result) {
             return result;
         }
@@ -44,7 +44,7 @@ const updateProjectParameters = async (projectId, paramsToUpdate) => {
     for (const param of paramsToUpdate.parameters) {
         const updatePath = `/projects/id:${projectId}/parameters/${param.name}`;
         console.log(` - Updating ${param.name} to ${param.value}`);
-        await (0, HttpService_1.put)(updatePath, `${param.value}`, "text/plain");
+        await (0, httpService_1.put)(updatePath, `${param.value}`, "text/plain");
     }
 };
 exports.updateProjectParameters = updateProjectParameters;
@@ -54,6 +54,6 @@ const triggerBuild = async (buildTypeId) => {
             id: buildTypeId,
         },
     };
-    await (0, HttpService_1.post)("/buildQueue", JSON.stringify(data));
+    await (0, httpService_1.post)("/buildQueue", JSON.stringify(data));
 };
 exports.triggerBuild = triggerBuild;

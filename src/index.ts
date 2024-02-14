@@ -3,7 +3,7 @@ import {
   getMostRecentProject,
   triggerBuild,
   updateProjectParameters,
-} from "./service/TeamCityService";
+} from "./services/teamCityService";
 import { Parameter, Project, UpdateParameters } from "./model";
 import { config } from "./config";
 
