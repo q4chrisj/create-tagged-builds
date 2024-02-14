@@ -1,4 +1,3 @@
-import * as core from "@actions/core";
 import {
   createNewProject,
   getMostRecentProject,
@@ -16,6 +15,9 @@ export const run = async (): Promise<void> => {
     return;
   }
 
+  console.log(
+    `Creating tagged build for ${config.TeamCityProject} using tag ${newTag}`,
+  );
   const newProjectName: string = newTag;
   const newProjectParentProjectId: string = config.TeamCityProject;
   const mostRecentProject = await getMostRecentProject(
