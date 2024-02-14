@@ -8,35 +8,32 @@ import {
 import { Parameter, Project, UpdateParameters } from "./model";
 import { Config, getConfig } from "./config";
 
+const TEAM_CITY_URI = core.getInput("team_city_uri");
+if (TEAM_CITY_URI === "") {
+  console.error("The team_city_uri must be passed into the action.");
+}
+const TEAM_CITY_TOKEN = core.getInput("team_city_token");
+if (TEAM_CITY_TOKEN === "") {
+  console.error("The TEAM_CITY_TOKEN must be passed into the action.");
+}
+
+const TEAM_CITY_PROJECT = core.getInput("team_city_project");
+if (TEAM_CITY_PROJECT === "") {
+  console.error("The TEAM_CITY_PROJECT must be passed into the action.");
+}
+
+export const config: Config = getConfig(
+  TEAM_CITY_URI,
+  TEAM_CITY_TOKEN,
+  TEAM_CITY_PROJECT,
+);
+
 export const run = async (): Promise<void> => {
   const newTag = process.env.GITHUB_REF_NAME;
   if (newTag === undefined) {
     console.error("Couldn't determine what the new tag is");
     return;
   }
-
-  const TEAM_CITY_URI = core.getInput("team_city_uri");
-  if (TEAM_CITY_URI === "") {
-    console.error("The team_city_uri must be passed into the action.");
-    return;
-  }
-  const TEAM_CITY_TOKEN = core.getInput("team_city_token");
-  if (TEAM_CITY_TOKEN === "") {
-    console.error("The TEAM_CITY_TOKEN must be passed into the action.");
-    return;
-  }
-
-  const TEAM_CITY_PROJECT = core.getInput("team_city_project");
-  if (TEAM_CITY_PROJECT === "") {
-    console.error("The TEAM_CITY_PROJECT must be passed into the action.");
-    return;
-  }
-
-  const config: Config = getConfig(
-    TEAM_CITY_URI,
-    TEAM_CITY_TOKEN,
-    TEAM_CITY_PROJECT,
-  );
 
   const newProjectName: string = newTag;
   const newProjectParentProjectId: string = config.TeamCityProject;
