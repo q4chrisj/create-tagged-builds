@@ -39,7 +39,7 @@ exports.config = {
         "The TEAM_CITY_TOKEN must be passed into the action",
     TeamCityProject: core.getInput("team_city_project") ||
         "The TEAM_CITY_PROJECT must be passed into the action",
-    GithubAccessToken: core.getInput("github_access_token") ||
+    GithubAccessToken: core.getInput("gh_access_token") ||
         "The GITHUB_ACCEESS_TOKEN must be pass into the action",
 };
 

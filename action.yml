@@ -15,7 +15,7 @@ inputs:
   team_city_project:
     description: "The root project in TeamCity for this repository"
     required: true
-  github_access_token:
+  gh_access_token:
     desecription: "Access token that will allow this action to make calls to the github api"
     required: true
 runs:
