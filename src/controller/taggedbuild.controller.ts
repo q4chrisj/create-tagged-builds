@@ -1,11 +1,13 @@
 import * as github from "@actions/github";
 import { config } from "../config";
 import { Parameter, Project, UpdateParameters } from "../model";
-import { TeamCityService } from "../services/teamCityService";
+import { TeamCityService } from "../services/teamcity.service";
+import { GithubService } from "../services/github.service";
+import { DependantRepos } from "./taggedbuild.controller.definition";
 
 export class CreateTaggedBuildController {
   private _teamCityService: TeamCityService = new TeamCityService();
-  private _octokit = github.getOctokit(config.GithubAccessToken);
+  private _githubService: GithubService = new GithubService();
 
   createTaggedBuild = async (newTag: string) => {
     console.log(
@@ -68,31 +70,47 @@ export class CreateTaggedBuildController {
     newTag: string,
     newProject: Project,
   ): Promise<void> => {
-    // figure out which parameters for the new project need to be updated.
-    const paramsToUpdate: Array<Parameter> = [];
-    paramsToUpdate.push({ name: "env.version", value: newTag });
-
-    newProject.parameters.property.forEach((p) => {
-      if (p.name.includes("system.GitDefaultBranch-")) {
-        // we'll need to check if p.name includes Foundation, Go and then make a
-        // call to github to get the latest tag for each and update
-        paramsToUpdate.push({ name: p.name, value: `tags/${newTag}` });
-      }
-    });
+    const paramsToUpdate: Array<Parameter> = await this.getParamsToUpdate(
+      newProject,
+      newTag,
+    );
 
     const paramUpdates: UpdateParameters = {
-      parameters: [],
+      parameters: paramsToUpdate,
     };
-
-    for (const param of paramsToUpdate) {
-      paramUpdates.parameters.push(param);
-    }
 
     console.log("Updating new projects parameters.");
     await this._teamCityService.updateProjectParameters(
       newProject.id,
       paramUpdates,
     );
+  };
+
+  private getParamsToUpdate = async (
+    newProject: Project,
+    newTag: string,
+  ): Promise<Array<Parameter>> => {
+    const paramsToUpdate: Array<Parameter> = [];
+    paramsToUpdate.push({ name: "env.version", value: newTag });
+
+    newProject.parameters.property.forEach(async (p) => {
+      if (p.name.includes("system.GitDefaultBranch-")) {
+        const dependantRepoKey: string = p.name.replace(
+          "system.GitDefaultBranch-",
+          "",
+        );
+        if (DependantRepos.has(dependantRepoKey)) {
+          const dependantRepo = DependantRepos.get(dependantRepoKey);
+          const dependantRepoLatestTag =
+            await this._githubService.getLatestTagName(dependantRepo!);
+          newTag = dependantRepoLatestTag;
+        }
+
+        paramsToUpdate.push({ name: p.name, value: `tags/${newTag}` });
+      }
+    });
+
+    return paramsToUpdate;
   };
 
   private triggerNewProjectBuild = async (

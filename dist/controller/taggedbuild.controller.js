@@ -1,36 +1,14 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateTaggedBuildController = void 0;
-const github = __importStar(require("@actions/github"));
 const config_1 = require("../config");
-const teamCityService_1 = require("../services/teamCityService");
+const teamcity_service_1 = require("../services/teamcity.service");
+const github_service_1 = require("../services/github.service");
+const taggedbuild_controller_definition_1 = require("./taggedbuild.controller.definition");
 class CreateTaggedBuildController {
     constructor() {
-        this._teamCityService = new teamCityService_1.TeamCityService();
-        this._octokit = github.getOctokit(config_1.config.GithubAccessToken);
+        this._teamCityService = new teamcity_service_1.TeamCityService();
+        this._githubService = new github_service_1.GithubService();
         this.createTaggedBuild = async (newTag) => {
             console.log(`\nCreating tagged build for ${config_1.config.TeamCityProject} using tag ${newTag}\n`);
             const newProjectName = newTag;
@@ -57,24 +35,28 @@ class CreateTaggedBuildController {
             return newProject;
         };
         this.updateProjectParameters = async (newTag, newProject) => {
-            // figure out which parameters for the new project need to be updated.
+            const paramsToUpdate = await this.getParamsToUpdate(newProject, newTag);
+            const paramUpdates = {
+                parameters: paramsToUpdate,
+            };
+            console.log("Updating new projects parameters.");
+            await this._teamCityService.updateProjectParameters(newProject.id, paramUpdates);
+        };
+        this.getParamsToUpdate = async (newProject, newTag) => {
             const paramsToUpdate = [];
             paramsToUpdate.push({ name: "env.version", value: newTag });
-            newProject.parameters.property.forEach((p) => {
+            newProject.parameters.property.forEach(async (p) => {
                 if (p.name.includes("system.GitDefaultBranch-")) {
-                    // we'll need to check if p.name includes Foundation, Go and then make a
-                    // call to github to get the latest tag for each and update
+                    const dependantRepoKey = p.name.replace("system.GitDefaultBranch-", "");
+                    if (taggedbuild_controller_definition_1.DependantRepos.has(dependantRepoKey)) {
+                        const dependantRepo = taggedbuild_controller_definition_1.DependantRepos.get(dependantRepoKey);
+                        const dependantRepoLatestTag = await this._githubService.getLatestTagName(dependantRepo);
+                        newTag = dependantRepoLatestTag;
+                    }
                     paramsToUpdate.push({ name: p.name, value: `tags/${newTag}` });
                 }
             });
-            const paramUpdates = {
-                parameters: [],
-            };
-            for (const param of paramsToUpdate) {
-                paramUpdates.parameters.push(param);
-            }
-            console.log("Updating new projects parameters.");
-            await this._teamCityService.updateProjectParameters(newProject.id, paramUpdates);
+            return paramsToUpdate;
         };
         this.triggerNewProjectBuild = async (newProject) => {
             const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI", "CI"];

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TeamCityService = void 0;
-const httpService_1 = require("./httpService");
+const http_service_1 = require("./http.service");
 class TeamCityService {
     constructor() {
         this.getMostRecentProject = async (projectId) => {
@@ -14,7 +14,7 @@ class TeamCityService {
             return mostRecentProject;
         };
         this.getProject = async (projectId) => {
-            return await (0, httpService_1.get)(`/projects/id:${projectId}`);
+            return await (0, http_service_1.get)(`/projects/id:${projectId}`);
         };
         this.createNewProject = async (projectName, projectParentId, projectSourceId) => {
             const newProjectId = projectParentId
@@ -31,7 +31,7 @@ class TeamCityService {
                 name: projectName,
                 copyAllAssociatedSettings: "true",
             };
-            const createResult = await (0, httpService_1.post)("/projects", JSON.stringify(newProject)).then((result) => {
+            const createResult = await (0, http_service_1.post)("/projects", JSON.stringify(newProject)).then((result) => {
                 if (result) {
                     return result;
                 }
@@ -43,7 +43,7 @@ class TeamCityService {
             for (const param of paramsToUpdate.parameters) {
                 const updatePath = `/projects/id:${projectId}/parameters/${param.name}`;
                 console.log(` - Updating ${param.name} to ${param.value}`);
-                await (0, httpService_1.put)(updatePath, `${param.value}`, "text/plain");
+                await (0, http_service_1.put)(updatePath, `${param.value}`, "text/plain");
             }
         };
         this.triggerBuild = async (buildTypeId) => {
@@ -52,7 +52,7 @@ class TeamCityService {
                     id: buildTypeId,
                 },
             };
-            await (0, httpService_1.post)("/buildQueue", JSON.stringify(data));
+            await (0, http_service_1.post)("/buildQueue", JSON.stringify(data));
         };
     }
 }

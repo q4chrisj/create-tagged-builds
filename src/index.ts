@@ -1,4 +1,4 @@
-import { CreateTaggedBuildController } from "./controller/createTaggedBuild";
+import { CreateTaggedBuildController } from "./controller/taggedbuild.controller";
 import { GithubService } from "./services/github.service";
 
 export const run = async (): Promise<void> => {

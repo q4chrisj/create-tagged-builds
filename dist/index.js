@@ -46,7 +46,142 @@ exports.config = {
 
 /***/ }),
 
-/***/ 3976:
+/***/ 5070:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DependantRepos = void 0;
+exports.DependantRepos = new Map();
+exports.DependantRepos.set("Q4Orion-Go", "Q4Web-Q4Orion-Go");
+exports.DependantRepos.set("Q4Foundation", "Q4Web-Q4Foundation");
+exports.DependantRepos.set("Q4Analytics", "Q4Web-Q4Analytics");
+
+
+/***/ }),
+
+/***/ 1010:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateTaggedBuildController = void 0;
+const config_1 = __nccwpck_require__(1677);
+const teamcity_service_1 = __nccwpck_require__(9551);
+const github_service_1 = __nccwpck_require__(6315);
+const taggedbuild_controller_definition_1 = __nccwpck_require__(5070);
+class CreateTaggedBuildController {
+    constructor() {
+        this._teamCityService = new teamcity_service_1.TeamCityService();
+        this._githubService = new github_service_1.GithubService();
+        this.createTaggedBuild = async (newTag) => {
+            console.log(`\nCreating tagged build for ${config_1.config.TeamCityProject} using tag ${newTag}\n`);
+            const newProjectName = newTag;
+            const newProjectParentProjectId = config_1.config.TeamCityProject;
+            const mostRecentProject = await this._teamCityService.getMostRecentProject(newProjectParentProjectId);
+            if (mostRecentProject === undefined) {
+                console.error(`Couldn't find a tagged build under ${newProjectParentProjectId}`);
+                return;
+            }
+            const newProject = await this.createProject(newProjectName, newProjectParentProjectId, mostRecentProject);
+            if (!newProject) {
+                console.error(` - Project ${newProjectName} was NOT created`);
+                return;
+            }
+            console.log(` - New Project ${newProject.name} created.\n`);
+            await this.updateProjectParameters(newTag, newProject);
+            // trigger the builds
+            console.log(`\nTriggering builds for new project ${newProject.name}`);
+            await this.triggerNewProjectBuild(newProject);
+        };
+        this.createProject = async (newProjectName, newProjectParentProjectId, mostRecentProject) => {
+            console.log(`Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`);
+            const newProject = await this._teamCityService.createNewProject(newProjectName, newProjectParentProjectId, mostRecentProject.id);
+            return newProject;
+        };
+        this.updateProjectParameters = async (newTag, newProject) => {
+            const paramsToUpdate = await this.getParamsToUpdate(newProject, newTag);
+            const paramUpdates = {
+                parameters: paramsToUpdate,
+            };
+            console.log("Updating new projects parameters.");
+            await this._teamCityService.updateProjectParameters(newProject.id, paramUpdates);
+        };
+        this.getParamsToUpdate = async (newProject, newTag) => {
+            const paramsToUpdate = [];
+            paramsToUpdate.push({ name: "env.version", value: newTag });
+            newProject.parameters.property.forEach(async (p) => {
+                if (p.name.includes("system.GitDefaultBranch-")) {
+                    const dependantRepoKey = p.name.replace("system.GitDefaultBranch-", "");
+                    if (taggedbuild_controller_definition_1.DependantRepos.has(dependantRepoKey)) {
+                        const dependantRepo = taggedbuild_controller_definition_1.DependantRepos.get(dependantRepoKey);
+                        const dependantRepoLatestTag = await this._githubService.getLatestTagName(dependantRepo);
+                        newTag = dependantRepoLatestTag;
+                    }
+                    paramsToUpdate.push({ name: p.name, value: `tags/${newTag}` });
+                }
+            });
+            return paramsToUpdate;
+        };
+        this.triggerNewProjectBuild = async (newProject) => {
+            const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI", "CI"];
+            for (const buildType of newProject.buildTypes.buildType) {
+                if (validBuildTypeNames.includes(buildType.name)) {
+                    console.log(` - Triggering build for ${buildType.name}`);
+                    await this._teamCityService.triggerBuild(buildType.id);
+                }
+            }
+        };
+    }
+}
+exports.CreateTaggedBuildController = CreateTaggedBuildController;
+
+
+/***/ }),
+
+/***/ 9283:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.run = void 0;
+const taggedbuild_controller_1 = __nccwpck_require__(1010);
+const run = async () => {
+    const newTag = process.env.GITHUB_REF_NAME;
+    if (newTag === undefined) {
+        console.error("Couldn't determine what the new tag is. This action should only be triggered when a new tag is pushed to the repository.");
+        return;
+    }
+    // const githubService = new GithubService();
+    // const latestGoTagName =
+    //   await githubService.getLatestTagName("Q4Web-Q4Orion-Go");
+    //
+    // console.log(latestGoTagName);
+    const controller = new taggedbuild_controller_1.CreateTaggedBuildController();
+    return await controller.createTaggedBuild(newTag);
+};
+exports.run = run;
+(0, exports.run)();
+
+
+/***/ }),
+
+/***/ 4068:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GITHUB_ORGANIZATION = void 0;
+exports.GITHUB_ORGANIZATION = "q4mobile";
+
+
+/***/ }),
+
+/***/ 6315:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -75,104 +210,29 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateTaggedBuildController = void 0;
+exports.GithubService = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const config_1 = __nccwpck_require__(1677);
-const teamCityService_1 = __nccwpck_require__(8420);
-class CreateTaggedBuildController {
+const github_service_definition_1 = __nccwpck_require__(4068);
+class GithubService {
     constructor() {
-        this._teamCityService = new teamCityService_1.TeamCityService();
         this._octokit = github.getOctokit(config_1.config.GithubAccessToken);
-        this.createTaggedBuild = async (newTag) => {
-            console.log(`\nCreating tagged build for ${config_1.config.TeamCityProject} using tag ${newTag}\n`);
-            const newProjectName = newTag;
-            const newProjectParentProjectId = config_1.config.TeamCityProject;
-            const mostRecentProject = await this._teamCityService.getMostRecentProject(newProjectParentProjectId);
-            if (mostRecentProject === undefined) {
-                console.error(`Couldn't find a tagged build under ${newProjectParentProjectId}`);
-                return;
-            }
-            const newProject = await this.createProject(newProjectName, newProjectParentProjectId, mostRecentProject);
-            if (!newProject) {
-                console.error(` - Project ${newProjectName} was NOT created`);
-                return;
-            }
-            console.log(` - New Project ${newProject.name} created.\n`);
-            await this.updateProjectParameters(newTag, newProject);
-            // trigger the builds
-            console.log(`\nTriggering builds for new project ${newProject.name}`);
-            await this.triggerNewProjectBuild(newProject);
-        };
-        this.createProject = async (newProjectName, newProjectParentProjectId, mostRecentProject) => {
-            console.log(`Copying ${mostRecentProject?.name} to create the new project ${newProjectName}.`);
-            const newProject = await this._teamCityService.createNewProject(newProjectName, newProjectParentProjectId, mostRecentProject.id);
-            return newProject;
-        };
-        this.updateProjectParameters = async (newTag, newProject) => {
-            // figure out which parameters for the new project need to be updated.
-            const paramsToUpdate = [];
-            paramsToUpdate.push({ name: "env.version", value: newTag });
-            newProject.parameters.property.forEach((p) => {
-                if (p.name.includes("system.GitDefaultBranch-")) {
-                    // we'll need to check if p.name includes Foundation, Go and then make a
-                    // call to github to get the latest tag for each and update
-                    paramsToUpdate.push({ name: p.name, value: `tags/${newTag}` });
-                }
+        this.getLatestTagName = async (repoName) => {
+            const tags = await this._octokit.rest.repos.listTags({
+                owner: github_service_definition_1.GITHUB_ORGANIZATION,
+                repo: repoName,
             });
-            const paramUpdates = {
-                parameters: [],
-            };
-            for (const param of paramsToUpdate) {
-                paramUpdates.parameters.push(param);
-            }
-            console.log("Updating new projects parameters.");
-            await this._teamCityService.updateProjectParameters(newProject.id, paramUpdates);
-        };
-        this.triggerNewProjectBuild = async (newProject) => {
-            const validBuildTypeNames = ["Public CI", "Admin CI", "Preview CI", "CI"];
-            for (const buildType of newProject.buildTypes.buildType) {
-                if (validBuildTypeNames.includes(buildType.name)) {
-                    console.log(` - Triggering build for ${buildType.name}`);
-                    await this._teamCityService.triggerBuild(buildType.id);
-                }
-            }
+            return tags.data[0].name;
+            console.log(tags.data[0].name);
         };
     }
 }
-exports.CreateTaggedBuildController = CreateTaggedBuildController;
+exports.GithubService = GithubService;
 
 
 /***/ }),
 
-/***/ 9283:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
-const createTaggedBuild_1 = __nccwpck_require__(3976);
-const run = async () => {
-    const newTag = process.env.GITHUB_REF_NAME;
-    if (newTag === undefined) {
-        console.error("Couldn't determine what the new tag is. This action should only be triggered when a new tag is pushed to the repository.");
-        return;
-    }
-    // const githubService = new GithubService();
-    // const latestGoTagName =
-    //   await githubService.getLatestTagName("Q4Web-Q4Orion-Go");
-    //
-    // console.log(latestGoTagName);
-    const controller = new createTaggedBuild_1.CreateTaggedBuildController();
-    return await controller.createTaggedBuild(newTag);
-};
-exports.run = run;
-(0, exports.run)();
-
-
-/***/ }),
-
-/***/ 4912:
+/***/ 6217:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -249,14 +309,14 @@ exports.put = put;
 
 /***/ }),
 
-/***/ 8420:
+/***/ 9551:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TeamCityService = void 0;
-const httpService_1 = __nccwpck_require__(4912);
+const http_service_1 = __nccwpck_require__(6217);
 class TeamCityService {
     constructor() {
         this.getMostRecentProject = async (projectId) => {
@@ -269,7 +329,7 @@ class TeamCityService {
             return mostRecentProject;
         };
         this.getProject = async (projectId) => {
-            return await (0, httpService_1.get)(`/projects/id:${projectId}`);
+            return await (0, http_service_1.get)(`/projects/id:${projectId}`);
         };
         this.createNewProject = async (projectName, projectParentId, projectSourceId) => {
             const newProjectId = projectParentId
@@ -286,7 +346,7 @@ class TeamCityService {
                 name: projectName,
                 copyAllAssociatedSettings: "true",
             };
-            const createResult = await (0, httpService_1.post)("/projects", JSON.stringify(newProject)).then((result) => {
+            const createResult = await (0, http_service_1.post)("/projects", JSON.stringify(newProject)).then((result) => {
                 if (result) {
                     return result;
                 }
@@ -298,7 +358,7 @@ class TeamCityService {
             for (const param of paramsToUpdate.parameters) {
                 const updatePath = `/projects/id:${projectId}/parameters/${param.name}`;
                 console.log(` - Updating ${param.name} to ${param.value}`);
-                await (0, httpService_1.put)(updatePath, `${param.value}`, "text/plain");
+                await (0, http_service_1.put)(updatePath, `${param.value}`, "text/plain");
             }
         };
         this.triggerBuild = async (buildTypeId) => {
@@ -307,7 +367,7 @@ class TeamCityService {
                     id: buildTypeId,
                 },
             };
-            await (0, httpService_1.post)("/buildQueue", JSON.stringify(data));
+            await (0, http_service_1.post)("/buildQueue", JSON.stringify(data));
         };
     }
 }

@@ -1,5 +1,5 @@
 import { NewProject, Project, TriggerBuild, UpdateParameters } from "../model";
-import { get, post, put } from "./httpService";
+import { get, post, put } from "./http.service";
 
 export class TeamCityService {
   getMostRecentProject = async (
