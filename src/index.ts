@@ -1,4 +1,5 @@
 import { CreateTaggedBuildController } from "./controller/createTaggedBuild";
+import { GithubService } from "./services/github.service";
 
 export const run = async (): Promise<void> => {
   const newTag = process.env.GITHUB_REF_NAME;
@@ -9,11 +10,16 @@ export const run = async (): Promise<void> => {
     return;
   }
 
+  // const githubService = new GithubService();
+  // const latestGoTagName =
+  //   await githubService.getLatestTagName("Q4Web-Q4Orion-Go");
+  //
+  // console.log(latestGoTagName);
+
   const controller: CreateTaggedBuildController =
     new CreateTaggedBuildController();
-  await controller.createTaggedBuild(newTag);
 
-  return;
+  return await controller.createTaggedBuild(newTag);
 };
 
 run();

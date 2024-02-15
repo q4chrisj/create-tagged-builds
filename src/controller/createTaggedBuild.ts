@@ -1,9 +1,11 @@
+import * as github from "@actions/github";
 import { config } from "../config";
 import { Parameter, Project, UpdateParameters } from "../model";
 import { TeamCityService } from "../services/teamCityService";
 
 export class CreateTaggedBuildController {
   private _teamCityService: TeamCityService = new TeamCityService();
+  private _octokit = github.getOctokit(config.GithubAccessToken);
 
   createTaggedBuild = async (newTag: string) => {
     console.log(

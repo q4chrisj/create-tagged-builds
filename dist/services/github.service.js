@@ -23,15 +23,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.config = void 0;
-const core = __importStar(require("@actions/core"));
-exports.config = {
-    TeamCityUri: core.getInput("team_city_uri") ||
-        "The TEAM_CITY_URI must be passed into the action",
-    TeamCityToken: core.getInput("team_city_token") ||
-        "The TEAM_CITY_TOKEN must be passed into the action",
-    TeamCityProject: core.getInput("team_city_project") ||
-        "The TEAM_CITY_PROJECT must be passed into the action",
-    GithubAccessToken: core.getInput("github_access_token") ||
-        "The GITHUB_ACCEESS_TOKEN must be pass into the action",
-};
+exports.GithubService = void 0;
+const github = __importStar(require("@actions/github"));
+const config_1 = require("../config");
+const github_service_definition_1 = require("./github.service.definition");
+class GithubService {
+    constructor() {
+        this._octokit = github.getOctokit(config_1.config.GithubAccessToken);
+        this.getLatestTagName = async (repoName) => {
+            const tags = await this._octokit.rest.repos.listTags({
+                owner: github_service_definition_1.GITHUB_ORGANIZATION,
+                repo: repoName,
+            });
+            return tags.data[0].name;
+            console.log(tags.data[0].name);
+        };
+    }
+}
+exports.GithubService = GithubService;

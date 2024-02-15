@@ -4,6 +4,7 @@ export type Config = {
   TeamCityToken: string;
   TeamCityUri: string;
   TeamCityProject: string;
+  GithubAccessToken: string;
 };
 
 export const config: Config = {
@@ -16,26 +17,7 @@ export const config: Config = {
   TeamCityProject:
     core.getInput("team_city_project") ||
     "The TEAM_CITY_PROJECT must be passed into the action",
+  GithubAccessToken:
+    core.getInput("github_access_token") ||
+    "The GITHUB_ACCEESS_TOKEN must be pass into the action",
 };
-// export const getConfig = (): Config => {
-//   const TEAM_CITY_URI = core.getInput("team_city_uri");
-//   if (TEAM_CITY_URI === "") {
-//     console.error("The team_city_uri must be passed into the action.");
-//   }
-//   const TEAM_CITY_TOKEN = core.getInput("team_city_token");
-//   if (TEAM_CITY_TOKEN === "") {
-//     console.error("The TEAM_CITY_TOKEN must be passed into the action.");
-//   }
-//
-//   const TEAM_CITY_PROJECT = core.getInput("team_city_project");
-//   if (TEAM_CITY_PROJECT === "") {
-//     console.error("The TEAM_CITY_PROJECT must be passed into the action.");
-//   }
-//
-//   const config: Config = {
-//     TeamCityUri: TEAM_CITY_URI,
-//     TeamCityToken: TEAM_CITY_TOKEN,
-//     TeamCityProject: TEAM_CITY_PROJECT,
-//   };
-//   return config;
-// };
