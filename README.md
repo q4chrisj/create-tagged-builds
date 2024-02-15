@@ -1,27 +1,26 @@
 # Create Tagged Builds - POC
 
-## How to run this
+## Example implementation
 
-1. Create a .env file in the root of the project and set the following:
+Add the following action to a studio repository, update the team_city_project
+value to match the TeamCity project that builds this repo.
 
-- TC_URL: Path to the team city rest api
-- TC_TOKEN: A token generated from your profile page in TeamCity
-
-2. Run `npx ts-node src/index.ts`
-
-- This will create a new build under Q4Web with the name v5.120.0. Since this
-  is a POC all values are hard coded.
-
-## Scope of this POC:
-
-1. Will not address tagging the repository.
-2. Will not take a project name string and tag string as input. These will be
-   hard coded for the POC.
-3. Will create a new tagged build under provided project name with the name of the tag.
-4. Once the tagged build has been created successfully then trigger the build programtically.
-5. Implemented using Q4Web in TeamCity (the most complicated repo setup we have)
-
-## Future Implementation Idea's
-
-- This code could be a github action that runs in each studio repository
-  everytime a new tag is pushed.
+```
+name: Create Tagged Builds
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  create-tagged-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Builds for Release
+        id: create-tagged-builds
+        uses: q4chrisj/create-tagged-builds@main (don't forget to update this)
+        with:
+          team_city_uri: ${{ secrets.TEAM_CITY_URI }}
+          team_city_token: ${{ secrets.TEAM_CITY_TOKEN }}
+          team_city_project: "CreateTaggedBuildsExample"
+          gh_access_token: ${{ secrets.GH_ACCESS_TOKEN}}
+```
