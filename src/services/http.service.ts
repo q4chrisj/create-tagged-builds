@@ -44,6 +44,7 @@ export const post = async <T>(
 
   return result;
 };
+
 export const put = async <T>(
   path: string,
   body: string,

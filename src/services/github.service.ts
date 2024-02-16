@@ -14,5 +14,3 @@ export class GithubService {
     return tags.data[0].name;
   };
 }
-
-export default GithubService;
