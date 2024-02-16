@@ -1,4 +1,3 @@
-import * as github from "@actions/github";
 import { config } from "../config";
 import { Parameter, Project, UpdateParameters } from "../model";
 import { TeamCityService } from "../services/teamcity.service";

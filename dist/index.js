@@ -223,11 +223,11 @@ class GithubService {
                 repo: repoName,
             });
             return tags.data[0].name;
-            console.log(tags.data[0].name);
         };
     }
 }
 exports.GithubService = GithubService;
+exports["default"] = GithubService;
 
 
 /***/ }),

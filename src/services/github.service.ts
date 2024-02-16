@@ -12,6 +12,7 @@ export class GithubService {
     });
 
     return tags.data[0].name;
-    console.log(tags.data[0].name);
   };
 }
+
+export default GithubService;
