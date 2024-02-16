@@ -40,4 +40,3 @@ class GithubService {
     }
 }
 exports.GithubService = GithubService;
-exports.default = GithubService;

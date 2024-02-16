@@ -155,11 +155,6 @@ const run = async () => {
         console.error("Couldn't determine what the new tag is. This action should only be triggered when a new tag is pushed to the repository.");
         return;
     }
-    // const githubService = new GithubService();
-    // const latestGoTagName =
-    //   await githubService.getLatestTagName("Q4Web-Q4Orion-Go");
-    //
-    // console.log(latestGoTagName);
     const controller = new taggedbuild_controller_1.CreateTaggedBuildController();
     return await controller.createTaggedBuild(newTag);
 };
@@ -227,7 +222,6 @@ class GithubService {
     }
 }
 exports.GithubService = GithubService;
-exports["default"] = GithubService;
 
 
 /***/ }),
