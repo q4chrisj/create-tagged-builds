@@ -6,8 +6,8 @@ This action is intended to reduce the amount of time it takes for a Studio
 release manager to get a Studio repository ready for release by automating the
 creation of tagged builds.
 
-With this action impmented in a Studio repository, everytime a tag is pushed the
-following will take place:
+With this action impmented in a Studio repository, everytime a tag matching the
+pattern `"v*.*.*"` is pushed the following will take place:
 
 1. This action will look at the `team_city_project` parameter and find that
    project in TeamCity. It will then list all the subprojects (tagged builds)
@@ -30,7 +30,7 @@ name: Create Tagged Builds
 on:
   push:
     tags:
-      - "v*"
+      - "v*.*.*"
 jobs:
   create-tagged-build:
     runs-on: ubuntu-latest
