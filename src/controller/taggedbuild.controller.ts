@@ -90,7 +90,7 @@ export class CreateTaggedBuildController {
     newTag: string,
   ): Promise<Array<Parameter>> => {
     const paramsToUpdate: Array<Parameter> = [];
-    paramsToUpdate.push({ name: "env.version", value: newTag });
+    paramsToUpdate.push({ name: "env.version", value: newTag.substring(1) });
 
     newProject.parameters.property.forEach(async (p) => {
       if (p.name.includes("system.GitDefaultBranch-")) {
